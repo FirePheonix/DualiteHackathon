@@ -53,7 +53,7 @@ const HeroSection: React.FC = () => {
       {/* Left Side - Build great products and win exciting prizes (2Dualite.svg) - Extreme left */}
       <div className="absolute top-[45%] sm:top-[48%] lg:top-[20%] left-0 sm:-left-2 lg:-left-4 xl:-left-6 w-40 sm:w-48 md:w-56 lg:w-64 xl:w-70 z-20 transform -translate-y-1/2">
         <img 
-          src="/src/assets/2Dualite.svg" 
+          src="/assets/2Dualite.svg" 
           alt="Build great products and win exciting prizes"
           className="w-full h-auto"
         />
@@ -62,7 +62,7 @@ const HeroSection: React.FC = () => {
       {/* Top Left - Build at lightning speed with Alpha (1Dualite.svg) - Extreme edges */}
       <div className="absolute top-[8%] sm:top-[10%] lg:top-[26%] left-2 sm:left-4 md:left-6 lg:left-8 xl:left-10 w-44 sm:w-52 md:w-60 lg:w-68 xl:w-72 z-30">
         <img 
-          src="/src/assets/1Dualite.svg" 
+          src="/assets/1Dualite.svg" 
           alt="Build at lightning speed with Alpha"
           className="w-full h-auto"
         />
@@ -71,7 +71,7 @@ const HeroSection: React.FC = () => {
       {/* Right Side - Supabase Integration live (4Dualite.svg) - Extreme right */}
       <div className="absolute top-[8%] sm:top-[10%] lg:top-[12%] right-0 sm:-right-2 lg:-right-4 xl:-right-6 w-44 sm:w-52 md:w-60 lg:w-68 xl:w-50 z-20">
         <img 
-          src="/src/assets/4Dualite.svg" 
+          src="/assets/4Dualite.svg" 
           alt="Supabase Integration live"
           className="w-full h-auto"
         />
@@ -80,7 +80,7 @@ const HeroSection: React.FC = () => {
       {/* Right Side - Compete with other cracked devs (3Dualite.svg) - Extreme edges */}
       <div className="absolute top-[45%] sm:top-[48%] lg:top-[40%] right-0 sm:right-0 md:right-6 lg:right-1 xl:right-14 w-40 sm:w-48 md:w-56 lg:w-64 xl:w-80 z-30 transform -translate-y-1/2">
         <img 
-          src="/src/assets/3Dualite.svg" 
+          src="/assets/3Dualite.svg" 
           alt="Compete with other cracked devs"
           className="w-full h-auto"
         />
@@ -90,18 +90,18 @@ const HeroSection: React.FC = () => {
       <div className="absolute left-1/2 top-[75%] sm:top-[78%] lg:top-[67%] z-40 w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] xl:w-[75%] max-w-4xl xl:max-w-5xl 2xl:max-w-6xl transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
         {/* Tilted cards at the edges of 5Dualite.svg - BEHIND the main card */}
         <img 
-          src="/src/assets/6Dualite.svg" 
+          src="/assets/6Dualite.svg" 
           alt="From Idea to website within a day"
           className="absolute -left-8 sm:-left-12 md:-left-16 lg:-left-24 xl:-left-32 bottom-2 sm:bottom-4 lg:bottom-6 xl:bottom-8 w-24 sm:w-32 md:w-40 lg:w-56 xl:w-72 2xl:w-90 rotate-[-12deg] z-10"
         />
         <img 
-          src="/src/assets/7Dualite.svg" 
+          src="/assets/7Dualite.svg" 
           alt="Validate fast. Scale seamlessly"
           className="absolute -right-8 sm:-right-12 md:-right-16 lg:-right-24 xl:-right-32 bottom-2 sm:bottom-4 lg:bottom-6 xl:bottom-8 w-24 sm:w-32 md:w-40 lg:w-56 xl:w-72 2xl:w-80 rotate-[12deg] z-10"
         />
         {/* Main card on top */}
         <img 
-          src="/src/assets/5Dualite.svg" 
+          src="/assets/5Dualite.svg" 
           alt="Dualite Main Card"
           className="w-full h-auto drop-shadow-2xl z-50 relative"
         />
