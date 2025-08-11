@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const HeroSection: React.FC = () => {
   const navigate = useNavigate();
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  const words = ['SCALABLE', 'LAUNCH-READY', 'MODULAR', 'FRICTIONLESS', 'FUTURE-PROOF'];
+
+  useEffect(() => {
+    // Trigger animations after component mounts
+    setIsLoaded(true);
+    
+    const interval = setInterval(() => {
+      setCurrentWordIndex((prevIndex) => (prevIndex + 1) % words.length);
+    }, 2000); // Change word every 2 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <section className="relative min-h-[200vh] bg-[#F2F2F2] pt-32 pb-60 overflow-hidden">
@@ -30,7 +45,16 @@ const HeroSection: React.FC = () => {
             <div className="h-px bg-black w-12 sm:w-16"></div>
             <h2 className="font-poppins font-medium text-base sm:text-lg md:text-xl lg:text-2xl text-black text-center whitespace-nowrap">
               WE BUILD<br />
-              SCALABLE PRODUCTS
+              
+                <span 
+                  key={currentWordIndex}
+                  className="inline-block animate-fadeInOut text-dark-gray"
+                  style={{
+                    animation: 'fadeInOut 2s ease-in-out'
+                  }}
+                >
+                  {words[currentWordIndex]} 
+                </span> PRODUCTS
             </h2>
             <div className="h-px bg-black w-12 sm:w-16"></div>
           </div>
@@ -50,8 +74,10 @@ const HeroSection: React.FC = () => {
 
       {/* SVG Components Positioned at Extreme Edges - Outside container */}
 
-      {/* Left Side - Build great products and win exciting prizes (2Dualite.svg) - Extreme left */}
-      <div className="absolute top-[45%] sm:top-[48%] lg:top-[20%] left-0 sm:-left-2 lg:-left-4 xl:-left-6 w-40 sm:w-48 md:w-56 lg:w-64 xl:w-70 z-20 transform -translate-y-1/2">
+      {/* Left Side - Build great products and win exciting prizes (2Dualite.svg) - Slide from left */}
+      <div className={`hidden lg:block absolute top-[45%] sm:top-[48%] lg:top-[20%] left-0 sm:-left-2 lg:-left-4 xl:-left-6 w-40 sm:w-48 md:w-56 lg:w-64 xl:w-70 z-20 transform -translate-y-1/2 transition-all duration-1000 ease-out ${
+        isLoaded ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
+      }`}>
         <img 
           src="/assets/2Dualite.svg" 
           alt="Build great products and win exciting prizes"
@@ -59,8 +85,10 @@ const HeroSection: React.FC = () => {
         />
       </div>
 
-      {/* Top Left - Build at lightning speed with Alpha (1Dualite.svg) - Extreme edges */}
-      <div className="absolute top-[8%] sm:top-[10%] lg:top-[26%] left-2 sm:left-4 md:left-6 lg:left-8 xl:left-10 w-44 sm:w-52 md:w-60 lg:w-68 xl:w-72 z-30">
+      {/* Top Left - Build at lightning speed with Alpha (1Dualite.svg) - Slide from left with delay */}
+      <div className={`hidden lg:block absolute top-[8%] sm:top-[10%] lg:top-[26%] left-2 sm:left-4 md:left-6 lg:left-8 xl:left-10 w-44 sm:w-52 md:w-60 lg:w-68 xl:w-72 z-30 transition-all duration-1000 ease-out delay-300 ${
+        isLoaded ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
+      }`}>
         <img 
           src="/assets/1Dualite.svg" 
           alt="Build at lightning speed with Alpha"
@@ -68,8 +96,10 @@ const HeroSection: React.FC = () => {
         />
       </div>
 
-      {/* Right Side - Supabase Integration live (4Dualite.svg) - Extreme right */}
-      <div className="absolute top-[8%] sm:top-[10%] lg:top-[12%] right-0 sm:-right-2 lg:-right-4 xl:-right-6 w-44 sm:w-52 md:w-60 lg:w-68 xl:w-50 z-20">
+      {/* Right Side - Supabase Integration live (4Dualite.svg) - Slide from right */}
+      <div className={`hidden lg:block absolute top-[8%] sm:top-[10%] lg:top-[12%] right-0 sm:-right-2 lg:-right-4 xl:-right-6 w-44 sm:w-52 md:w-60 lg:w-68 xl:w-50 z-20 transition-all duration-1000 ease-out ${
+        isLoaded ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+      }`}>
         <img 
           src="/assets/4Dualite.svg" 
           alt="Supabase Integration live"
@@ -77,8 +107,10 @@ const HeroSection: React.FC = () => {
         />
       </div>
 
-      {/* Right Side - Compete with other cracked devs (3Dualite.svg) - Extreme edges */}
-      <div className="absolute top-[45%] sm:top-[48%] lg:top-[40%] right-0 sm:right-0 md:right-6 lg:right-1 xl:right-14 w-40 sm:w-48 md:w-56 lg:w-64 xl:w-80 z-30 transform -translate-y-1/2">
+      {/* Right Side - Compete with other cracked devs (3Dualite.svg) - Slide from right with delay */}
+      <div className={`hidden lg:block absolute top-[45%] sm:top-[48%] lg:top-[40%] right-0 sm:right-0 md:right-6 lg:right-1 xl:right-14 w-40 sm:w-48 md:w-56 lg:w-64 xl:w-80 z-30 transform -translate-y-1/2 transition-all duration-1000 ease-out delay-300 ${
+        isLoaded ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+      }`}>
         <img 
           src="/assets/3Dualite.svg" 
           alt="Compete with other cracked devs"
@@ -107,6 +139,13 @@ const HeroSection: React.FC = () => {
         />
       </div>
 
+      {/* Custom CSS for the fade animation */}
+      <style>{`
+        @keyframes fadeInOut {
+          0%, 100% { opacity: 0; transform: translateY(10px); }
+          20%, 80% { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
 
     </section>
   );

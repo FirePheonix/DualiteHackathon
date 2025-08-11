@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import Header from '../components/Header';
+import { motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 
 const UploadPage: React.FC = () => {
   const [title, setTitle] = useState('');
@@ -15,6 +17,36 @@ const UploadPage: React.FC = () => {
   const navigate = useNavigate();
 
   console.log('UploadPage - Component mounted, user:', user);
+
+  // Animation variants
+  const containerAnimation = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const itemAnimation = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6 }
+    }
+  };
+
+  const formAnimation = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { duration: 0.8 }
+    }
+  };
 
   const isValidUrl = (string: string) => {
     try {
@@ -112,10 +144,21 @@ const UploadPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F2F2F2] pt-32 pb-16">
       <Header />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
+      <motion.div 
+        className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12"
+        initial="hidden"
+        animate="visible"
+        variants={containerAnimation}
+      >
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white/70 backdrop-blur-sm border-2 border-[#DDDDDD] rounded-3xl p-8 shadow-card">
-            <div className="text-center mb-8">
+          <motion.div 
+            className="bg-white/70 backdrop-blur-sm border-2 border-[#DDDDDD] rounded-3xl p-8 shadow-card"
+            variants={formAnimation}
+          >
+            <motion.div 
+              className="text-center mb-8"
+              variants={itemAnimation}
+            >
               <h1 className="font-playfair font-bold text-3xl lg:text-4xl text-dark-gray mb-4">
                 Upload Your Project
               </h1>
@@ -126,10 +169,14 @@ const UploadPage: React.FC = () => {
                 </p>
                 <div className="h-px bg-black w-8"></div>
               </div>
-            </div>
+            </motion.div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
+            <motion.form 
+              onSubmit={handleSubmit} 
+              className="space-y-6"
+              variants={containerAnimation}
+            >
+              <motion.div variants={itemAnimation}>
                 <label className="block font-poppins text-sm font-medium text-black mb-2">
                   Project Title
                 </label>
@@ -142,9 +189,9 @@ const UploadPage: React.FC = () => {
                   className="w-full px-4 py-3 bg-white border border-[#DDDDDD] rounded-xl font-poppins text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-dark-gray focus:border-transparent"
                   placeholder="Enter your project title"
                 />
-              </div>
+              </motion.div>
 
-              <div>
+              <motion.div variants={itemAnimation}>
                 <label className="block font-poppins text-sm font-medium text-black mb-2">
                   Deployed URL
                 </label>
@@ -156,12 +203,12 @@ const UploadPage: React.FC = () => {
                   className="w-full px-4 py-3 bg-white border border-[#DDDDDD] rounded-xl font-poppins text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-dark-gray focus:border-transparent"
                   placeholder="https://your-project.vercel.app"
                 />
-                <p className="font-poppins text-xs text-gray-500 mt-1">
+                <p className="font-poppins text-gray-500 mt-1">
                   Vercel, Netlify, or any deployed URL
                 </p>
-              </div>
+              </motion.div>
 
-              <div>
+              <motion.div variants={itemAnimation}>
                 <label className="block font-poppins text-sm font-medium text-black mb-2">
                   Description
                 </label>
@@ -174,41 +221,56 @@ const UploadPage: React.FC = () => {
                   className="w-full px-4 py-3 bg-white border border-[#DDDDDD] rounded-xl font-poppins text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-dark-gray focus:border-transparent resize-none"
                   placeholder="Describe your project, what it does, and how you built it with Dualite..."
                 />
-                <p className="font-poppins text-xs text-gray-500 mt-1">
+                <p className="font-poppins text-gray-500 mt-1">
                   {description.length}/500 characters
                 </p>
-              </div>
+              </motion.div>
 
-              {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl">
-                  <p className="font-poppins text-sm">{error}</p>
-                </div>
-              )}
+              <AnimatePresence>
+                {error && (
+                  <motion.div 
+                    className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <p className="font-poppins text-sm">{error}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-              <div className="flex space-x-4">
-                <button
+              <motion.div 
+                className="flex space-x-4"
+                variants={itemAnimation}
+              >
+                <motion.button
                   type="button"
                   onClick={() => navigate('/projects')}
                   className="flex-1 bg-gray-200 rounded-xl py-4 hover:bg-gray-300 transition-colors"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <span className="font-gidugu text-lg text-black font-bold">
                     CANCEL
                   </span>
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="submit"
                   disabled={loading}
                   className="flex-1 bg-dark-gray shadow-button rounded-xl py-4 hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <span className="font-gidugu text-lg text-white font-bold">
                     {loading ? 'UPLOADING...' : 'UPLOAD PROJECT'}
                   </span>
-                </button>
-              </div>
-            </form>
-          </div>
+                </motion.button>
+              </motion.div>
+            </motion.form>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
