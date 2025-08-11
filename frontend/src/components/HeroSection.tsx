@@ -119,7 +119,7 @@ const HeroSection: React.FC = () => {
       </div>
 
       {/* Centered 5Dualite.svg overlapping everything - Much much lower position */}
-      <div className="absolute left-1/2 top-[75%] sm:top-[78%] lg:top-[67%] z-40 w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] xl:w-[75%] max-w-4xl xl:max-w-5xl 2xl:max-w-6xl transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+      <div className="absolute left-1/2 top-[85%] sm:top-[88%] lg:top-[80%] z-40 w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] xl:w-[75%] max-w-4xl xl:max-w-5xl 2xl:max-w-6xl transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
         {/* Tilted cards at the edges of 5Dualite.svg - BEHIND the main card */}
         <img 
           src="/assets/6Dualite.svg" 
