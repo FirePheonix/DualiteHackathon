@@ -16,7 +16,8 @@ const ProjectsPage: React.FC = () => {
   const [error, setError] = useState('');
   const [userVotes, setUserVotes] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('today');
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -91,12 +92,34 @@ const ProjectsPage: React.FC = () => {
     }
   }, [user]);
 
+  const fetchCommentCounts = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('comments')
+        .select('project_id')
+        .not('project_id', 'is', null);
+
+      if (error) throw error;
+      
+      // Count comments per project
+      const counts: Record<string, number> = {};
+      data?.forEach(comment => {
+        counts[comment.project_id] = (counts[comment.project_id] || 0) + 1;
+      });
+      
+      setCommentCounts(counts);
+    } catch (error: any) {
+      console.error('Error fetching comment counts:', error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchProjects();
+    fetchCommentCounts(); // Always fetch comment counts
     if (user) {
       fetchUserVotes();
     }
-  }, [user, fetchProjects, fetchUserVotes]);
+  }, [user, fetchProjects, fetchUserVotes, fetchCommentCounts]);
 
   // Filter and sort projects based on search query and time filter
   useEffect(() => {
@@ -313,19 +336,6 @@ const ProjectsPage: React.FC = () => {
               variants={containerAnimation}
             >
               <motion.button
-                onClick={() => setTimeFilter('all')}
-                className={`px-4 py-2 rounded-xl font-poppins font-medium transition-colors ${
-                  timeFilter === 'all'
-                    ? 'bg-dark-gray text-white shadow-button'
-                    : 'bg-gray-200 text-black hover:bg-gray-300'
-                }`}
-                variants={itemAnimation}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                All Time
-              </motion.button>
-              <motion.button
                 onClick={() => setTimeFilter('today')}
                 className={`px-4 py-2 rounded-xl font-poppins font-medium transition-colors ${
                   timeFilter === 'today'
@@ -364,6 +374,19 @@ const ProjectsPage: React.FC = () => {
               >
                 This Month
               </motion.button>
+              <motion.button
+                onClick={() => setTimeFilter('all')}
+                className={`px-4 py-2 rounded-xl font-poppins font-medium transition-colors ${
+                  timeFilter === 'all'
+                    ? 'bg-dark-gray text-white shadow-button'
+                    : 'bg-gray-200 text-black hover:bg-gray-300'
+                }`}
+                variants={itemAnimation}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                All Time
+              </motion.button>
             </motion.div>
 
             {/* Results Count */}
@@ -379,7 +402,7 @@ const ProjectsPage: React.FC = () => {
         </motion.div>
 
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto"
+          className="max-w-4xl mx-auto space-y-4"
           variants={containerAnimation}
         >
           {filteredProjects.map((project, index) => {
@@ -390,111 +413,113 @@ const ProjectsPage: React.FC = () => {
             return (
               <motion.div 
                 key={project.id} 
-                className="bg-white/70 backdrop-blur-sm border border-[#DDDDDD] rounded-2xl p-6 shadow-card flex flex-col relative"
+                className="bg-white/70 backdrop-blur-sm border border-[#DDDDDD] rounded-2xl p-6 shadow-card hover:shadow-lg transition-shadow"
                 variants={cardAnimation}
                 custom={index}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                whileHover={{ y: -2, transition: { duration: 0.2 } }}
               >
-                <div className="aspect-video mb-4 rounded-xl overflow-hidden bg-gray-200 relative">
-                  <img
-                    src={getProjectThumbnail(project)}
-                    alt={`Screenshot of ${project.title}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Fallback to placeholder if screenshot fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.src = `https://placehold.co/600x400/F0DFCB/020202?text=${encodeURIComponent(project.title)}`;
-                    }}
-                    loading="lazy"
-                  />
-                  
-                  {/* Medal Display */}
-                  {medalData && (
-                    <div className="absolute -top-2 -right-2 z-10">
-                      <div 
-                        className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg border-2 border-white relative"
-                        style={{ backgroundColor: medalData.color }}
+                <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-6">
+                  {/* Left side - Thumbnail */}
+                  <div className="flex-shrink-0 relative w-full sm:w-auto">
+                    <div className="w-full sm:w-32 h-48 sm:h-32 rounded-xl overflow-hidden bg-gray-200">
+                      <img
+                        src={getProjectThumbnail(project)}
+                        alt={`Screenshot of ${project.title}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = `https://placehold.co/400x300/F0DFCB/020202?text=${encodeURIComponent(project.title)}`;
+                        }}
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Center - Project Info */}
+                  <div className="flex-1 min-w-0 w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
+                      <h3 className="font-poppins font-bold text-xl text-black truncate" title={project.title}>
+                        {project.title}
+                      </h3>
+                      {medalData && (
+                        <span 
+                          className="font-poppins font-bold text-sm px-2 py-1 rounded-full shadow-sm flex-shrink-0 self-start sm:self-auto"
+                          style={{ 
+                            backgroundColor: medalData.color,
+                            color: 'white'
+                          }}
+                        >
+                          {medalData.text}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <p className="font-poppins text-sm text-gray-600 mb-2" title={project.user_email}>
+                      by {project.user_email}
+                    </p>
+                    
+                    <p className="font-poppins text-sm text-black leading-relaxed mb-4 line-clamp-2">
+                      {project.description}
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                      <a
+                        href={project.vercel_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-poppins text-sm text-dark-gray hover:underline flex items-center space-x-1"
                       >
-                        <Medal size={20} className="text-white" />
-                        <div className="absolute -top-1 -right-1 bg-white rounded-full w-6 h-6 flex items-center justify-center shadow-md border border-gray-200">
-                          <span className="font-poppins font-bold text-xs" style={{ color: medalData.color }}>
-                            {medalData.text.replace('#', '')}
+                        <span>Visit Site</span>
+                        <ExternalLink size={14} />
+                      </a>
+                      <button
+                        onClick={() => navigate(`/projects/${project.id}`)}
+                        className="font-poppins text-sm text-dark-gray hover:underline flex items-center space-x-1"
+                      >
+                        <span>View Project</span>
+                        <MessageCircle size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right side - Stats and Vote */}
+                  <div className="flex-shrink-0 flex flex-row sm:flex-col items-center sm:items-end space-x-4 sm:space-x-0 sm:space-y-3 w-full sm:w-auto">
+                    {/* Vote Button */}
+                    <motion.button
+                      onClick={() => handleVote(project.id)}
+                      disabled={isOwnProject}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-poppins transition-colors ${
+                        isOwnProject
+                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                          : isVoted
+                          ? 'bg-purple-button text-black'
+                          : 'bg-gray-200 text-black hover:bg-gray-300'
+                      }`}
+                      whileHover={!isOwnProject ? { scale: 1.05 } : {}}
+                      whileTap={!isOwnProject ? { scale: 0.95 } : {}}
+                    >
+                      <ThumbsUp size={16} className={isVoted ? 'text-black' : ''} />
+                      <span className="font-bold">{project.vote_count || 0}</span>
+                    </motion.button>
+
+                    {/* Stats Display */}
+                    <div className="text-center sm:text-right">
+                      <div className="flex flex-col sm:flex-row items-center sm:items-end space-y-1 sm:space-y-0 sm:space-x-4 text-sm">
+                        <div className="flex items-center space-x-1">
+                          <ThumbsUp size={14} className="text-gray-500" />
+                          <span className="font-poppins font-medium text-gray-700">
+                            {project.vote_count || 0} upvotes
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <MessageCircle size={14} className="text-gray-500" />
+                          <span className="font-poppins font-medium text-gray-700">
+                            {commentCounts[project.id] || 0} comments
                           </span>
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
-                
-                <div className="flex items-center space-x-2 mb-2">
-                  <h3 className="font-poppins font-bold text-xl text-black truncate flex-1" title={project.title}>
-                    {project.title}
-                  </h3>
-                  {medalData && (
-                    <div className="flex-shrink-0 flex items-center space-x-1">
-                      <div 
-                        className="w-8 h-8 rounded-full flex items-center justify-center shadow-md"
-                        style={{ backgroundColor: medalData.color }}
-                      >
-                        <Medal size={14} className="text-white" />
-                      </div>
-                      <span 
-                        className="font-poppins font-bold text-sm px-2 py-1 rounded-full shadow-sm"
-                        style={{ 
-                          backgroundColor: medalData.color,
-                          color: 'white'
-                        }}
-                      >
-                        {medalData.text}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                
-                <p className="font-poppins text-sm text-gray-600 mb-2 truncate" title={project.user_email}>
-                  by {project.user_email}
-                </p>
-                
-                <p className="font-poppins text-sm text-black leading-relaxed mb-4 flex-grow">
-                  {project.description}
-                </p>
-                
-                <div className="flex items-center justify-between mt-auto">
-                  <div className="flex space-x-2">
-                    <a
-                      href={project.vercel_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-poppins text-sm text-dark-gray hover:underline flex items-center space-x-1"
-                    >
-                      <span>Visit Site</span>
-                      <ExternalLink size={14} />
-                    </a>
-                    <button
-                      onClick={() => navigate(`/projects/${project.id}`)}
-                      className="font-poppins text-sm text-dark-gray hover:underline flex items-center space-x-1"
-                    >
-                      <span>View Project</span>
-                      <MessageCircle size={14} />
-                    </button>
                   </div>
-                  
-                  <motion.button
-                    onClick={() => handleVote(project.id)}
-                    disabled={isOwnProject}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-poppins transition-colors ${
-                      isOwnProject
-                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                        : isVoted
-                        ? 'bg-purple-button text-black'
-                        : 'bg-gray-200 text-black hover:bg-gray-300'
-                    }`}
-                    whileHover={!isOwnProject ? { scale: 1.05 } : {}}
-                    whileTap={!isOwnProject ? { scale: 0.95 } : {}}
-                  >
-                    <ThumbsUp size={16} className={isVoted ? 'text-black' : ''} />
-                    <span>{project.vote_count || 0}</span>
-                  </motion.button>
                 </div>
               </motion.div>
             );
