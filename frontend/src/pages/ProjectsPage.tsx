@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase, Project } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import Header from '../components/Header';
-import { ThumbsUp, Search, ExternalLink, MessageCircle } from 'lucide-react';
+import { ThumbsUp, Search, ExternalLink, MessageCircle, Medal } from 'lucide-react';
 import { getGoogleDriveImageUrl, isGoogleDriveUrl, isImgBbUrl } from '../lib/mediaUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -208,6 +208,19 @@ const ProjectsPage: React.FC = () => {
     }
   };
 
+  const getMedalData = (index: number, timeFilter: TimeFilter) => {
+    if (timeFilter === 'all') return null;
+    
+    if (index === 0) {
+      return { type: 'gold', color: '#FFD700', text: '#1' };
+    } else if (index === 1) {
+      return { type: 'silver', color: '#C0C0C0', text: '#2' };
+    } else if (index === 2) {
+      return { type: 'bronze', color: '#CD7F32', text: '#3' };
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F2F2F2] pt-32">
@@ -372,16 +385,17 @@ const ProjectsPage: React.FC = () => {
           {filteredProjects.map((project, index) => {
             const isVoted = userVotes.has(project.id);
             const isOwnProject = user?.id === project.user_id;
+            const medalData = getMedalData(index, timeFilter);
 
             return (
               <motion.div 
                 key={project.id} 
-                className="bg-white/70 backdrop-blur-sm border border-[#DDDDDD] rounded-2xl p-6 shadow-card flex flex-col"
+                className="bg-white/70 backdrop-blur-sm border border-[#DDDDDD] rounded-2xl p-6 shadow-card flex flex-col relative"
                 variants={cardAnimation}
                 custom={index}
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
               >
-                <div className="aspect-video mb-4 rounded-xl overflow-hidden bg-gray-200">
+                <div className="aspect-video mb-4 rounded-xl overflow-hidden bg-gray-200 relative">
                   <img
                     src={getProjectThumbnail(project)}
                     alt={`Screenshot of ${project.title}`}
@@ -393,11 +407,49 @@ const ProjectsPage: React.FC = () => {
                     }}
                     loading="lazy"
                   />
+                  
+                  {/* Medal Display */}
+                  {medalData && (
+                    <div className="absolute -top-2 -right-2 z-10">
+                      <div 
+                        className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg border-2 border-white relative"
+                        style={{ backgroundColor: medalData.color }}
+                      >
+                        <Medal size={20} className="text-white" />
+                        <div className="absolute -top-1 -right-1 bg-white rounded-full w-6 h-6 flex items-center justify-center shadow-md border border-gray-200">
+                          <span className="font-poppins font-bold text-xs" style={{ color: medalData.color }}>
+                            {medalData.text.replace('#', '')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
-                <h3 className="font-poppins font-bold text-xl text-black mb-2 truncate" title={project.title}>
-                  {project.title}
-                </h3>
+                <div className="flex items-center space-x-2 mb-2">
+                  <h3 className="font-poppins font-bold text-xl text-black truncate flex-1" title={project.title}>
+                    {project.title}
+                  </h3>
+                  {medalData && (
+                    <div className="flex-shrink-0 flex items-center space-x-1">
+                      <div 
+                        className="w-8 h-8 rounded-full flex items-center justify-center shadow-md"
+                        style={{ backgroundColor: medalData.color }}
+                      >
+                        <Medal size={14} className="text-white" />
+                      </div>
+                      <span 
+                        className="font-poppins font-bold text-sm px-2 py-1 rounded-full shadow-sm"
+                        style={{ 
+                          backgroundColor: medalData.color,
+                          color: 'white'
+                        }}
+                      >
+                        {medalData.text}
+                      </span>
+                    </div>
+                  )}
+                </div>
                 
                 <p className="font-poppins text-sm text-gray-600 mb-2 truncate" title={project.user_email}>
                   by {project.user_email}

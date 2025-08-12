@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase, Project } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import Header from '../components/Header';
-import { Edit, Trash2, Save, X, ThumbsUp } from 'lucide-react';
+import { Edit, Trash2, Save, X, ThumbsUp, Plus, Minus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type TabType = 'projects' | 'upvotes';
@@ -14,7 +14,12 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editingProject, setEditingProject] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ title: '', description: '' });
+  const [editForm, setEditForm] = useState({ 
+    title: '', 
+    description: '', 
+    thumbnailUrl: '', 
+    mediaUrls: [''] 
+  });
   const [activeTab, setActiveTab] = useState<TabType>('projects');
   
   const { user } = useAuth();
@@ -111,15 +116,28 @@ const Dashboard: React.FC = () => {
 
   const handleEdit = (project: Project) => {
     setEditingProject(project.id);
-    setEditForm({ title: project.title, description: project.description });
+    setEditForm({ 
+      title: project.title, 
+      description: project.description,
+      thumbnailUrl: project.thumbnail_url || '',
+      mediaUrls: project.media_urls && project.media_urls.length > 0 ? project.media_urls : ['']
+    });
   };
 
   const handleSaveEdit = async (projectId: string) => {
     if (!user) return;
     try {
+      // Filter out empty media URLs
+      const validMediaUrls = editForm.mediaUrls.filter(url => url.trim());
+      
       const { error } = await supabase
         .from('projects')
-        .update({ title: editForm.title.trim(), description: editForm.description.trim() })
+        .update({ 
+          title: editForm.title.trim(), 
+          description: editForm.description.trim(),
+          thumbnail_url: editForm.thumbnailUrl.trim() || null,
+          media_urls: validMediaUrls.length > 0 ? validMediaUrls : null
+        })
         .eq('id', projectId)
         .eq('user_id', user.id);
       if (error) throw error;
@@ -286,8 +304,82 @@ const Dashboard: React.FC = () => {
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.3 }}
                         >
-                          <input type="text" value={editForm.title} onChange={(e) => setEditForm({...editForm, title: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg font-poppins" />
-                          <textarea value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg font-poppins resize-none" />
+                          <div>
+                            <label className="block font-poppins text-sm font-medium text-black mb-2">Title</label>
+                            <input 
+                              type="text" 
+                              value={editForm.title} 
+                              onChange={(e) => setEditForm({...editForm, title: e.target.value})} 
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg font-poppins focus:outline-none focus:ring-2 focus:ring-dark-gray focus:border-transparent" 
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block font-poppins text-sm font-medium text-black mb-2">Description</label>
+                            <textarea 
+                              value={editForm.description} 
+                              onChange={(e) => setEditForm({...editForm, description: e.target.value})} 
+                              rows={3} 
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg font-poppins resize-none focus:outline-none focus:ring-2 focus:ring-dark-gray focus:border-transparent" 
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block font-poppins text-sm font-medium text-black mb-2">
+                              Thumbnail Image (IMG BB or Google Drive Link)
+                            </label>
+                            <input
+                              type="url"
+                              value={editForm.thumbnailUrl}
+                              onChange={(e) => setEditForm({...editForm, thumbnailUrl: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg font-poppins focus:outline-none focus:ring-2 focus:ring-dark-gray focus:border-transparent"
+                              placeholder="https://i.ibb.co/... or https://drive.google.com/file/d/... (optional)"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block font-poppins text-sm font-medium text-black mb-2">
+                              Media Gallery (Images & Videos)
+                            </label>
+                            <div className="space-y-3">
+                              {editForm.mediaUrls.map((url, index) => (
+                                <div key={index} className="flex space-x-2">
+                                  <input
+                                    type="url"
+                                    value={url}
+                                    onChange={(e) => {
+                                      const newUrls = [...editForm.mediaUrls];
+                                      newUrls[index] = e.target.value;
+                                      setEditForm({...editForm, mediaUrls: newUrls});
+                                    }}
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg font-poppins focus:outline-none focus:ring-2 focus:ring-dark-gray focus:border-transparent"
+                                    placeholder="IMG BB image, Google Drive image, or YouTube video link"
+                                  />
+                                  {editForm.mediaUrls.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newUrls = editForm.mediaUrls.filter((_, i) => i !== index);
+                                        setEditForm({...editForm, mediaUrls: newUrls.length ? newUrls : ['']});
+                                      }}
+                                      className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                    >
+                                      <Minus size={16} />
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                              <button
+                                type="button"
+                                onClick={() => setEditForm({...editForm, mediaUrls: [...editForm.mediaUrls, '']})}
+                                className="w-full px-3 py-2 bg-gray-200 border border-gray-300 rounded-lg font-poppins text-black hover:bg-gray-300 transition-colors"
+                              >
+                                <Plus size={16} className="inline mr-2" />
+                                Add Another Media
+                              </button>
+                            </div>
+                          </div>
+
                           <div className="flex space-x-2">
                             <motion.button 
                               onClick={() => handleSaveEdit(project.id)} 
