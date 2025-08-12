@@ -5,11 +5,14 @@ import { useAuth } from '../hooks/useAuth';
 import Header from '../components/Header';
 import { motion } from 'framer-motion';
 import { AnimatePresence } from 'framer-motion';
+import { isValidUrl as isValidMediaUrl } from '../lib/mediaUtils';
 
 const UploadPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [vercelUrl, setVercelUrl] = useState('');
   const [description, setDescription] = useState('');
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [mediaUrls, setMediaUrls] = useState<string[]>(['']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -80,6 +83,8 @@ const UploadPage: React.FC = () => {
       title: title.trim(),
       vercel_url: vercelUrl.trim(),
       description: description.trim(),
+      thumbnail_url: thumbnailUrl.trim() || null,
+      media_urls: mediaUrls.filter(url => url.trim()),
     });
 
     try {
@@ -107,6 +112,8 @@ const UploadPage: React.FC = () => {
             title: title.trim(),
             vercel_url: vercelUrl.trim(),
             description: description.trim(),
+            thumbnail_url: thumbnailUrl.trim() || null,
+            media_urls: mediaUrls.filter(url => url.trim()),
           }
         ])
         .select();
@@ -223,6 +230,67 @@ const UploadPage: React.FC = () => {
                 />
                 <p className="font-poppins text-gray-500 mt-1">
                   {description.length}/500 characters
+                </p>
+              </motion.div>
+
+              <motion.div variants={itemAnimation}>
+                <label className="block font-poppins text-sm font-medium text-black mb-2">
+                  Thumbnail Image (Google Drive or IMG BB Link)
+                </label>
+                <input
+                  type="url"
+                  value={thumbnailUrl}
+                  onChange={(e) => setThumbnailUrl(e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-[#DDDDDD] rounded-xl font-poppins text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-dark-gray focus:border-transparent"
+                  placeholder="https://i.ibb.co/... or https://drive.google.com/file/d/... (optional)"
+                />
+                <p className="font-poppins text-gray-500 mt-1">
+                  Paste a Google Drive or IMG BB image link for the project thumbnail
+                </p>
+              </motion.div>
+
+              <motion.div variants={itemAnimation}>
+                <label className="block font-poppins text-sm font-medium text-black mb-2">
+                  Media Gallery (Images & Videos)
+                </label>
+                <div className="space-y-3">
+                  {mediaUrls.map((url, index) => (
+                    <div key={index} className="flex space-x-2">
+                      <input
+                        type="url"
+                        value={url}
+                        onChange={(e) => {
+                          const newUrls = [...mediaUrls];
+                          newUrls[index] = e.target.value;
+                          setMediaUrls(newUrls);
+                        }}
+                        className="flex-1 px-4 py-3 bg-white border border-[#DDDDDD] rounded-xl font-poppins text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-dark-gray focus:border-transparent"
+                        placeholder="IMG BB image, Google Drive image, or YouTube video link"
+                      />
+                      {mediaUrls.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newUrls = mediaUrls.filter((_, i) => i !== index);
+                            setMediaUrls(newUrls.length ? newUrls : ['']);
+                          }}
+                          className="px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setMediaUrls([...mediaUrls, ''])}
+                    className="w-full px-4 py-3 bg-gray-200 border border-gray-300 rounded-xl font-poppins text-black hover:bg-gray-300 transition-colors"
+                  >
+                    + Add Another Media
+                  </button>
+                </div>
+                <p className="font-poppins text-gray-500 mt-1">
+                  Add IMG BB images, Google Drive images, or YouTube videos for the project carousel
                 </p>
               </motion.div>
 

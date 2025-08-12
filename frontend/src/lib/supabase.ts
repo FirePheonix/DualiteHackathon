@@ -28,6 +28,8 @@ export type Project = {
   vercel_url: string;
   title: string;
   description: string;
+  thumbnail_url?: string;
+  media_urls?: string[];
   created_at: string;
   vote_count?: number;
   user_email?: string;
@@ -38,4 +40,16 @@ export type Vote = {
   user_id: string;
   project_id: string;
   created_at: string;
+};
+
+export type Comment = {
+  id: string;
+  user_id: string;
+  project_id: string;
+  parent_id?: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  user_email?: string;
+  replies?: Comment[];
 };

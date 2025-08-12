@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase, Project } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import Header from '../components/Header';
-import { ThumbsUp, Search } from 'lucide-react';
+import { ThumbsUp, Search, ExternalLink, MessageCircle } from 'lucide-react';
+import { getGoogleDriveImageUrl, isGoogleDriveUrl, isImgBbUrl } from '../lib/mediaUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type TimeFilter = 'all' | 'today' | 'week' | 'month';
@@ -188,15 +189,22 @@ const ProjectsPage: React.FC = () => {
     }
   };
 
-  const getProjectThumbnail = (url: string) => {
+  const getProjectThumbnail = (project: Project) => {
+    // If project has a custom thumbnail (Google Drive or IMG BB), use it
+    if (project.thumbnail_url && (isGoogleDriveUrl(project.thumbnail_url) || isImgBbUrl(project.thumbnail_url))) {
+      if (isGoogleDriveUrl(project.thumbnail_url)) {
+        return getGoogleDriveImageUrl(project.thumbnail_url);
+      }
+      return project.thumbnail_url; // IMG BB URLs are already direct
+    }
+    
+    // Fallback to screenshot service
     try {
-      // Use a reliable free screenshot service
-      // This service provides website screenshots without API keys
-      const screenshotUrl = `https://api.screenshotone.com/take?url=${encodeURIComponent(url)}&width=800&height=600&format=jpeg&quality=80&block_ads=true&delay=2`;
+      const screenshotUrl = `https://api.screenshotone.com/take?url=${encodeURIComponent(project.vercel_url)}&width=800&height=600&format=jpeg&quality=80&block_ads=true&delay=2`;
       return screenshotUrl;
     } catch {
-      // Fallback to a placeholder if URL is invalid
-      return `https://placehold.co/600x400/F0DFCB/020202?text=Website+Screenshot`;
+      // Fallback to a placeholder with project name
+      return `https://placehold.co/600x400/F0DFCB/020202?text=${encodeURIComponent(project.title)}`;
     }
   };
 
@@ -375,7 +383,7 @@ const ProjectsPage: React.FC = () => {
               >
                 <div className="aspect-video mb-4 rounded-xl overflow-hidden bg-gray-200">
                   <img
-                    src={getProjectThumbnail(project.vercel_url)}
+                    src={getProjectThumbnail(project)}
                     alt={`Screenshot of ${project.title}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -400,14 +408,24 @@ const ProjectsPage: React.FC = () => {
                 </p>
                 
                 <div className="flex items-center justify-between mt-auto">
-                  <a
-                    href={project.vercel_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-poppins text-sm text-dark-gray hover:underline"
-                  >
-                    View Project →
-                  </a>
+                  <div className="flex space-x-2">
+                    <a
+                      href={project.vercel_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-poppins text-sm text-dark-gray hover:underline flex items-center space-x-1"
+                    >
+                      <span>Visit Site</span>
+                      <ExternalLink size={14} />
+                    </a>
+                    <button
+                      onClick={() => navigate(`/projects/${project.id}`)}
+                      className="font-poppins text-sm text-dark-gray hover:underline flex items-center space-x-1"
+                    >
+                      <span>View Project</span>
+                      <MessageCircle size={14} />
+                    </button>
+                  </div>
                   
                   <motion.button
                     onClick={() => handleVote(project.id)}

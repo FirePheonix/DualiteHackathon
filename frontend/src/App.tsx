@@ -7,6 +7,7 @@ import BottomSection from './components/BottomSection';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import ProjectsPage from './pages/ProjectsPage';
+import ProjectDetailPage from './pages/ProjectDetailPage';
 import UploadPage from './pages/UploadPage';
 import { useAuth } from './hooks/useAuth';
 
@@ -72,6 +73,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
         <Route path="/test" element={<div>Test route working!</div>} />
         <Route path="/debug" element={
           <div className="min-h-screen bg-[#F2F2F2] pt-32 pb-16">
